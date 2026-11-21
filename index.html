@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Hotel Booking System</title>
+
+<style>
+
+body{
+
+    font-family:Arial;
+
+    background-image:url('https://images.unsplash.com/photo-1551882547-ff40c63fe5fa');
+
+    background-size:cover;
+
+    background-position:center;
+
+    background-repeat:no-repeat;
+
+    background-attachment:fixed;
+
+    margin:0;
+
+    padding:20px;
+
+}
+
+.container{
+
+    background:rgba(255,255,255,0.92);
+
+    padding:30px;
+
+    border-radius:15px;
+
+    box-shadow:0 0 15px rgba(0,0,0,0.4);
+
+}
+
+h1{
+
+    text-align:center;
+
+    margin-bottom:20px;
+
+    color:#333;
+
+}
+
+input{
+
+    width:100%;
+
+    padding:12px;
+
+    margin-top:10px;
+
+    border:1px solid gray;
+
+    border-radius:5px;
+
+    box-sizing:border-box;
+
+}
+
+button{
+
+    padding:12px 20px;
+
+    background:#1877f2;
+
+    color:white;
+
+    border:none;
+
+    border-radius:5px;
+
+    margin-top:10px;
+
+    margin-right:10px;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+}
+
+button:hover{
+
+    background:#145dbf;
+
+}
+
+table{
+
+    width:100%;
+
+    margin-top:20px;
+
+    border-collapse:collapse;
+
+    background:white;
+
+}
+
+table,th,td{
+
+    border:1px solid black;
+
+}
+
+th{
+
+    background:#1877f2;
+
+    color:white;
+
+}
+
+td,th{
+
+    padding:10px;
+
+    text-align:center;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🏨 Hotel Booking System</h1>
+
+<button onclick="logout()">Logout</button>
+
+<input type="text" id="name" placeholder="Customer Name">
+
+<input type="text" id="room_type" placeholder="Room Type">
+
+<input type="number" id="rooms_available" placeholder="Rooms Available">
+
+<input type="number" id="staying_days" placeholder="Staying Days">
+
+<input type="date" id="leaving_date">
+
+<input type="number" id="amount_per_day" placeholder="Amount Per Day">
+
+<input type="date" id="booking_date">
+
+<button onclick="book()">➕ Insert</button>
+
+<button onclick="viewData()">📋 Select</button>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+<th>Name</th>
+<th>Room</th>
+<th>Rooms</th>
+<th>Days</th>
+<th>Leaving</th>
+<th>Amount</th>
+<th>Total</th>
+<th>Booking</th>
+<th>Update</th>
+<th>Delete</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tableBody">
+
+</tbody>
+
+</table>
+
+</div>
+
+<script>
+
+if(localStorage.getItem("loggedIn")!="true"){
+
+window.location.href="login.html";
+
+}
+
+
+
+function logout(){
+
+localStorage.removeItem("loggedIn");
+
+window.location.href="login.html";
+
+}
+
+
+
+function book(){
+
+const name=document.getElementById("name").value;
+
+const room_type=document.getElementById("room_type").value;
+
+const rooms_available=document.getElementById("rooms_available").value;
+
+const staying_days=document.getElementById("staying_days").value;
+
+const leaving_date=document.getElementById("leaving_date").value;
+
+const amount_per_day=document.getElementById("amount_per_day").value;
+
+const booking_date=document.getElementById("booking_date").value;
+
+const total_amount=staying_days * amount_per_day;
+
+
+
+fetch("http://localhost:3000/book",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+name:name,
+room_type:room_type,
+rooms_available:rooms_available,
+staying_days:staying_days,
+leaving_date:leaving_date,
+amount_per_day:amount_per_day,
+total_amount:total_amount,
+booking_date:booking_date
+
+})
+
+})
+
+.then(res=>res.text())
+
+.then(data=>{
+
+alert(data);
+
+viewData();
+
+});
+
+}
+
+
+
+function viewData(){
+
+fetch("http://localhost:3000/view")
+
+.then(res=>res.json())
+
+.then(data=>{
+
+let rows="";
+
+data.forEach(item=>{
+
+rows += `
+
+<tr>
+
+<td>${item.id}</td>
+
+<td>${item.name}</td>
+
+<td>${item.room_type}</td>
+
+<td>${item.rooms_available}</td>
+
+<td>${item.staying_days}</td>
+
+<td>${item.leaving_date}</td>
+
+<td>${item.amount_per_day}</td>
+
+<td>${item.total_amount}</td>
+
+<td>${item.booking_date}</td>
+
+<td>
+
+<button onclick="updateData(${item.id})">
+
+✏ Update
+
+</button>
+
+</td>
+
+<td>
+
+<button onclick="deleteData(${item.id})">
+
+🗑 Delete
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+document.getElementById("tableBody").innerHTML=rows;
+
+});
+
+}
+
+
+
+function updateData(id){
+
+const newName=prompt("Enter New Name");
+
+const newRoom=prompt("Enter Room Type");
+
+const newRooms=prompt("Enter Rooms Available");
+
+const newDays=prompt("Enter Staying Days");
+
+const newLeaving=prompt("Enter Leaving Date");
+
+const newAmount=prompt("Enter Amount");
+
+const newBooking=prompt("Enter Booking Date");
+
+const newTotal=newDays * newAmount;
+
+
+
+fetch(`http://localhost:3000/update/${id}`,{
+
+method:"PUT",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+name:newName,
+room_type:newRoom,
+rooms_available:newRooms,
+staying_days:newDays,
+leaving_date:newLeaving,
+amount_per_day:newAmount,
+total_amount:newTotal,
+booking_date:newBooking
+
+})
+
+})
+
+.then(res=>res.text())
+
+.then(data=>{
+
+alert(data);
+
+viewData();
+
+});
+
+}
+
+
+
+function deleteData(id){
+
+fetch(`http://localhost:3000/delete/${id}`,{
+
+method:"DELETE"
+
+})
+
+.then(res=>res.text())
+
+.then(data=>{
+
+alert(data);
+
+viewData();
+
+});
+
+}
+
+
+
+viewData();
+
+</script>
+
+</body>
+
+</html>
